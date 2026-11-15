@@ -1,0 +1,273 @@
+
+$ java -version
+openjdk version "21.0.13.0.3" 2026-10-24
+OpenJDK Runtime Environment (build 21.0.13.0.3+1-1-24.04.1-Ubuntu)
+OpenJDK 64-Bit Server VM (build 21.0.13.0.3+1-1-24.04.1-Ubuntu, mixed mode, sharing)
+
+$ sudo tar -xzf kafka_2.13-4.4.0.tgz -C /opt
+
+$ sudo mv /opt/kafka_2.13-4.4.0 /opt/kafka
+
+$ ls /opt/kafka
+LICENSE
+NOTICE
+bin
+config
+libs
+licenses
+site-docs
+
+$ ls /opt/kafka/bin | head -30
+connect-distributed.sh
+connect-internal-topics.sh
+connect-mirror-maker.sh
+connect-plugin-path.sh
+connect-standalone.sh
+kafka-acls.sh
+kafka-broker-api-versions.sh
+kafka-client-metrics.sh
+kafka-cluster.sh
+kafka-configs.sh
+kafka-console-consumer.sh
+kafka-console-producer.sh
+kafka-console-share-consumer.sh
+kafka-consumer-groups.sh
+kafka-consumer-perf-test.sh
+kafka-delegation-tokens.sh
+kafka-delete-records.sh
+kafka-dump-log.sh
+kafka-e2e-latency.sh
+kafka-features.sh
+kafka-get-offsets.sh
+kafka-groups.sh
+kafka-jmx.sh
+kafka-leader-election.sh
+kafka-log-dirs.sh
+kafka-metadata-quorum.sh
+kafka-metadata-shell.sh
+kafka-producer-perf-test.sh
+kafka-reassign-partitions.sh
+kafka-replica-verification.sh
+
+$ sudo useradd -r -s /usr/sbin/nologin kafka
+
+$ sudo mkdir -p /var/lib/kafka
+
+$ sudo chown -R kafka:kafka /opt/kafka /var/lib/kafka
+
+$ grep -vE '^#|^$' /opt/kafka/config/server.properties
+process.roles=broker,controller
+node.id=1
+controller.quorum.bootstrap.servers=localhost:9093
+listeners=PLAINTEXT://:9092,CONTROLLER://:9093
+inter.broker.listener.name=PLAINTEXT
+advertised.listeners=PLAINTEXT://localhost:9092,CONTROLLER://localhost:9093
+controller.listener.names=CONTROLLER
+listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,SSL:SSL,SASL_PLAINTEXT:SASL_PLAINTEXT,SASL_SSL:SASL_SSL
+num.network.threads=3
+num.io.threads=8
+socket.send.buffer.bytes=102400
+socket.receive.buffer.bytes=102400
+socket.request.max.bytes=104857600
+log.dirs=/tmp/kraft-combined-logs
+num.partitions=1
+num.recovery.threads.per.data.dir=2
+offsets.topic.replication.factor=1
+share.coordinator.state.topic.replication.factor=1
+share.coordinator.state.topic.min.isr=1
+transaction.state.log.replication.factor=1
+transaction.state.log.min.isr=1
+log.retention.hours=168
+log.segment.bytes=1073741824
+log.retention.check.interval.ms=300000
+
+$ sudo sed -i s#^log.dirs=.*#log.dirs=/var/lib/kafka# /opt/kafka/config/server.properties
+
+$ grep -E '^(process.roles|node.id|listeners|controller|log.dirs|num.partitions|log.retention.hours)' /opt/kafka/config/server.properties
+process.roles=broker,controller
+node.id=1
+controller.quorum.bootstrap.servers=localhost:9093
+listeners=PLAINTEXT://:9092,CONTROLLER://:9093
+controller.listener.names=CONTROLLER
+log.dirs=/var/lib/kafka
+num.partitions=1
+log.retention.hours=168
+
+$ ID=$(/opt/kafka/bin/kafka-storage.sh random-uuid); echo $ID
+HcRWDrizSySFe_cDuneH8w
+
+$ sudo -u kafka /opt/kafka/bin/kafka-storage.sh format --standalone -t $ID -c /opt/kafka/config/server.properties
+Bootstrap metadata: BootstrapMetadata(records=[ApiMessageAndVersion(FeatureLevelRecord(name='metadata.version', featureLevel=33) at version 0), ApiMessageAndVersion(FeatureLevelRecord(name='eligible.leader.replicas.version', featureLevel=1) at version 0), ApiMessageAndVersion(FeatureLevelRecord(name='group.version', featureLevel=1) at version 0), ApiMessageAndVersion(FeatureLevelRecord(name='share.version', featureLevel=2) at version 0), ApiMessageAndVersion(FeatureLevelRecord(name='streams.version', featureLevel=1) at version 0), ApiMessageAndVersion(FeatureLevelRecord(name='transaction.version', featureLevel=2) at version 0)], metadataVersionLevel=33, source=format command)
+Formatting dynamic metadata voter directory /var/lib/kafka with metadata.version 4.4-IV2.
+
+$ sudo ls /var/lib/kafka
+__cluster_metadata-0
+meta.properties
+
+$ cat /etc/systemd/system/kafka.service
+[Unit]
+Description=Apache Kafka (KRaft)
+After=network.target
+
+[Service]
+User=kafka
+Environment=JAVA_HOME=/usr/lib/jvm/java-21-openjdk-arm64
+Environment="KAFKA_HEAP_OPTS=-Xmx512m -Xms512m"
+ExecStart=/opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties
+ExecStop=/opt/kafka/bin/kafka-server-stop.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
+$ sudo systemctl daemon-reload
+
+$ sudo systemctl enable --now kafka
+Created symlink /etc/systemd/system/multi-user.target.wants/kafka.service → /etc/systemd/system/kafka.service.
+
+$ systemctl status kafka --no-pager | head -8
+● kafka.service - Apache Kafka (KRaft)
+     Loaded: loaded (/etc/systemd/system/kafka.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-11-15 05:41:53 UTC; 2min 22s ago
+   Main PID: 5343 (java)
+      Tasks: 122 (limit: 9561)
+     Memory: 342.1M (peak: 353.4M swap: 256.0K swap peak: 840.0K)
+        CPU: 1min 483ms
+     CGroup: /docker/0a223237d3f58e1db8a9cebad5a421e7e1794ce845736927851781cde097c1ed/system.slice/kafka.service
+
+$ ps -o user,pid,comm -u kafka
+USER         PID COMMAND
+kafka       5343 java
+
+$ sudo ss -lntp | grep -E ':909[23]'
+LISTEN 0      50                 *:9092             *:*    users:(("java",pid=5343,fd=169))                       
+LISTEN 0      50                 *:9093             *:*    users:(("java",pid=5343,fd=137))                       
+
+$ grep -E 'started|Recorded new KRaft controller' /opt/kafka/logs/server.log | tail -4
+[2026-11-15 05:44:13,690] INFO Recorded new KRaft controller, from now on will use node localhost:9093 (id: 1 rack: null isFenced: false) (org.apache.kafka.server.NodeToControllerRequestThread)
+[2026-11-15 05:44:14,407] INFO [BrokerServer id=1] Waiting for all of the SocketServer Acceptors to be started (kafka.server.BrokerServer)
+[2026-11-15 05:44:14,408] INFO [BrokerServer id=1] Finished waiting for all of the SocketServer Acceptors to be started (kafka.server.BrokerServer)
+[2026-11-15 05:44:14,414] INFO [KafkaRaftServer nodeId=1] Kafka Server started (kafka.server.KafkaRaftServer)
+
+$ ls /opt/kafka/logs
+controller.log
+kafka-authorizer.log
+kafka-request.log
+kafkaServer-gc.log
+log-cleaner.log
+server.log
+state-change.log
+
+$ /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --topic payments --partitions 3 --replication-factor 1
+Created topic payments.
+
+$ /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
+Error while executing topic command : Timed out waiting for a node assignment. Call: listTopics
+[2026-11-15 05:46:18,495] ERROR org.apache.kafka.common.errors.TimeoutException: Timed out waiting for a node assignment. Call: listTopics
+ (org.apache.kafka.tools.TopicCommand)
+
+$ /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic payments
+Topic: payments	TopicId: kXxlpHjhT9evyc4AtkhFew	PartitionCount: 3	ReplicationFactor: 1	Configs: min.insync.replicas=1,segment.bytes=1073741824
+	Topic: payments	Partition: 0	Leader: 1	Replicas: 1	Isr: 1	Elr: 	LastKnownElr: 
+	Topic: payments	Partition: 1	Leader: 1	Replicas: 1	Isr: 1	Elr: 	LastKnownElr: 
+	Topic: payments	Partition: 2	Leader: 1	Replicas: 1	Isr: 1	Elr: 	LastKnownElr: 
+
+$ sudo ls /var/lib/kafka
+__cluster_metadata-0
+cleaner-offset-checkpoint
+log-start-offset-checkpoint
+meta.properties
+payments-0
+payments-1
+payments-2
+recovery-point-offset-checkpoint
+replication-offset-checkpoint
+
+$ printf 'PaymentCompleted PAY-1001\nPaymentCompleted PAY-1002\nPaymentCompleted PAY-1003\n' | /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic payments
+
+$ /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic payments --from-beginning --max-messages 3
+The consumer rebalance protocol (KIP-848) is production-ready! Set group.protocol=consumer to try it out. See https://kafka.apache.org/documentation/#consumer_rebalance_protocol
+PaymentCompleted PAY-1001
+PaymentCompleted PAY-1002
+PaymentCompleted PAY-1003
+Processed a total of 3 messages
+
+$ /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic payments --from-beginning --max-messages 3
+The consumer rebalance protocol (KIP-848) is production-ready! Set group.protocol=consumer to try it out. See https://kafka.apache.org/documentation/#consumer_rebalance_protocol
+PaymentCompleted PAY-1001
+PaymentCompleted PAY-1002
+PaymentCompleted PAY-1003
+Processed a total of 3 messages
+
+$ /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --list
+console-consumer-99595
+console-consumer-30081
+notification-service
+
+$ /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group notification-service --members --verbose
+
+GROUP                CONSUMER-ID                                           HOST            CLIENT-ID        #PARTITIONS     CURRENT-EPOCH   CURRENT-ASSIGNMENT   TARGET-EPOCH    TARGET-ASSIGNMENT   
+notification-service console-consumer-335388f1-1816-43d1-9fde-eae228779f7d /127.0.0.1      console-consumer 2               -               payments:0,1         -               -                   
+notification-service console-consumer-700457d0-e9cb-4920-bf9f-f81de4d3322b /127.0.0.1      console-consumer 1               -               payments:2           -               -                   
+
+$ printf 'k1:PaymentCompleted PAY-2001\nk2:PaymentCompleted PAY-2002\nk3:PaymentCompleted PAY-2003\nk4:PaymentCompleted PAY-2004\nk5:PaymentCompleted PAY-2005\nk6:PaymentCompleted PAY-2006\n' | /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic payments --property parse.key=true --property key.separator=:
+Warning: --property is deprecated and will be removed in a future version. Use --reader-property instead.
+[2026-11-15 05:56:28,064] WARN [Producer clientId=console-producer] Bootstrap broker localhost:9092 (id: -1 rack: null isFenced: false) disconnected (org.apache.kafka.clients.NetworkClient)
+
+$ cat c1.out
+Option --property is deprecated and will be removed in a future version. Use --formatter-property instead.
+The consumer rebalance protocol (KIP-848) is production-ready! Set group.protocol=consumer to try it out. See https://kafka.apache.org/documentation/#consumer_rebalance_protocol
+Partition:2	PaymentCompleted PAY-2001
+
+$ cat c2.out
+Option --property is deprecated and will be removed in a future version. Use --formatter-property instead.
+The consumer rebalance protocol (KIP-848) is production-ready! Set group.protocol=consumer to try it out. See https://kafka.apache.org/documentation/#consumer_rebalance_protocol
+Partition:0	PaymentCompleted PAY-2002
+Partition:0	PaymentCompleted PAY-2005
+Partition:1	PaymentCompleted PAY-2003
+Partition:1	PaymentCompleted PAY-2004
+Partition:1	PaymentCompleted PAY-2006
+
+$ /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic payments --group fraud-check --from-beginning --max-messages 9 --property print.partition=true
+Option --property is deprecated and will be removed in a future version. Use --formatter-property instead.
+The consumer rebalance protocol (KIP-848) is production-ready! Set group.protocol=consumer to try it out. See https://kafka.apache.org/documentation/#consumer_rebalance_protocol
+Partition:0	PaymentCompleted PAY-2002
+Partition:0	PaymentCompleted PAY-2005
+Partition:2	PaymentCompleted PAY-2001
+Partition:1	PaymentCompleted PAY-1001
+Partition:1	PaymentCompleted PAY-1002
+Partition:1	PaymentCompleted PAY-1003
+Partition:1	PaymentCompleted PAY-2003
+Partition:1	PaymentCompleted PAY-2004
+Partition:1	PaymentCompleted PAY-2006
+Processed a total of 9 messages
+
+$ /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --list
+fraud-check
+notification-service
+
+$ printf 'ACC-1001:PaymentCreated PAY-5001\nACC-2002:PaymentCreated PAY-5002\nACC-1001:PaymentCompleted PAY-5001\nACC-2002:PaymentCompleted PAY-5002\nACC-1001:RefundIssued PAY-5001\n' | /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic payments --property parse.key=true --property key.separator=:
+Warning: --property is deprecated and will be removed in a future version. Use --reader-property instead.
+
+$ /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic payments --group key-demo --from-beginning --max-messages 14 --property print.partition=true --property print.key=true
+Option --property is deprecated and will be removed in a future version. Use --formatter-property instead.
+The consumer rebalance protocol (KIP-848) is production-ready! Set group.protocol=consumer to try it out. See https://kafka.apache.org/documentation/#consumer_rebalance_protocol
+Partition:0	k2	PaymentCompleted PAY-2002
+Partition:0	k5	PaymentCompleted PAY-2005
+Partition:2	k1	PaymentCompleted PAY-2001
+Partition:2	ACC-2002	PaymentCreated PAY-5002
+Partition:2	ACC-2002	PaymentCompleted PAY-5002
+Partition:1	null	PaymentCompleted PAY-1001
+Partition:1	null	PaymentCompleted PAY-1002
+Partition:1	null	PaymentCompleted PAY-1003
+Partition:1	k3	PaymentCompleted PAY-2003
+Partition:1	k4	PaymentCompleted PAY-2004
+Partition:1	k6	PaymentCompleted PAY-2006
+Partition:1	ACC-1001	PaymentCreated PAY-5001
+Partition:1	ACC-1001	PaymentCompleted PAY-5001
+Partition:1	ACC-1001	RefundIssued PAY-5001
+Processed a total of 14 messages
+
+$ grep -E 'ERROR|WARN' /opt/kafka/logs/server.log | tail -3
+
+===DONE

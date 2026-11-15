@@ -1,0 +1,152 @@
+chmod: cannot access 'rabbitmqadmin': No such file or directory
+mv: cannot stat 'rabbitmqadmin': No such file or directory
+
+$ rabbitmqadmin declare queue name=sms durable=true
+queue declared
+
+$ rabbitmqadmin declare exchange name=payments type=topic
+exchange declared
+
+$ rabbitmqadmin declare binding source=payments destination=sms routing_key=payment.completed
+binding declared
+
+$ rabbitmqadmin publish exchange=payments routing_key=payment.completed payload='{"event":"PaymentCompleted","paymentId":"PAY-1001"}'
+Message published
+
+$ sudo rabbitmqctl list_queues name messages consumers
+Timeout: 60.0 seconds ...
+Listing queues for vhost / ...
+name	messages	consumers
+sms	1	0
+
+$ rabbitmqadmin -f long get queue=sms ackmode=ack_requeue_true
+
+--------------------------------------------------------------------------------
+
+     routing_key: payment.completed
+        exchange: payments
+   message_count: 0
+         payload: {"event":"PaymentCompleted","paymentId":"PAY-1001"}
+   payload_bytes: 51
+payload_encoding: string
+      properties: 
+     redelivered: False
+
+--------------------------------------------------------------------------------
+
+
+$ rabbitmqadmin -f long get queue=sms ackmode=ack_requeue_false
+
+--------------------------------------------------------------------------------
+
+     routing_key: payment.completed
+        exchange: payments
+   message_count: 0
+         payload: {"event":"PaymentCompleted","paymentId":"PAY-1001"}
+   payload_bytes: 51
+payload_encoding: string
+      properties: 
+     redelivered: True
+
+--------------------------------------------------------------------------------
+
+
+$ rabbitmqadmin declare exchange name=payments.dlx type=fanout
+exchange declared
+
+$ rabbitmqadmin declare queue name=sms.dlq durable=true
+queue declared
+
+$ rabbitmqadmin declare binding source=payments.dlx destination=sms.dlq
+binding declared
+
+$ sudo rabbitmqctl set_policy sms-dlx '^sms$' '{"dead-letter-exchange":"payments.dlx"}' --apply-to queues
+Setting policy "sms-dlx" for pattern "^sms$" to "{"dead-letter-exchange":"payments.dlx"}" with priority "0" for vhost "/" ...
+
+$ rabbitmqadmin publish exchange=payments routing_key=payment.completed payload='{"event":"PaymentCompleted","paymentId":"PAY-2002"}'
+Message published
+
+$ rabbitmqadmin -f long get queue=sms ackmode=reject_requeue_true
+
+--------------------------------------------------------------------------------
+
+     routing_key: payment.completed
+        exchange: payments
+   message_count: 0
+         payload: {"event":"PaymentCompleted","paymentId":"PAY-2002"}
+   payload_bytes: 51
+payload_encoding: string
+      properties: 
+     redelivered: False
+
+--------------------------------------------------------------------------------
+
+
+$ rabbitmqadmin -f long get queue=sms ackmode=reject_requeue_true
+
+--------------------------------------------------------------------------------
+
+     routing_key: payment.completed
+        exchange: payments
+   message_count: 0
+         payload: {"event":"PaymentCompleted","paymentId":"PAY-2002"}
+   payload_bytes: 51
+payload_encoding: string
+      properties: 
+     redelivered: True
+
+--------------------------------------------------------------------------------
+
+
+$ rabbitmqadmin -f long get queue=sms ackmode=reject_requeue_false
+
+--------------------------------------------------------------------------------
+
+     routing_key: payment.completed
+        exchange: payments
+   message_count: 0
+         payload: {"event":"PaymentCompleted","paymentId":"PAY-2002"}
+   payload_bytes: 51
+payload_encoding: string
+      properties: 
+     redelivered: True
+
+--------------------------------------------------------------------------------
+
+
+$ sudo rabbitmqctl list_queues name messages consumers
+Timeout: 60.0 seconds ...
+Listing queues for vhost / ...
+name	messages	consumers
+sms.dlq	1	0
+sms	0	0
+
+$ curl -s -u guest:guest -X POST http://localhost:15672/api/queues/%2F/sms.dlq/get -H 'content-type: application/json' -d '{"count":1,"ackmode":"ack_requeue_true","encoding":"auto"}' | jq '.[0].properties.headers'
+{
+  "x-death": [
+    {
+      "count": 1,
+      "exchange": "payments",
+      "queue": "sms",
+      "reason": "rejected",
+      "routing-keys": [
+        "payment.completed"
+      ],
+      "time": 1794724997
+    }
+  ],
+  "x-first-death-exchange": "payments",
+  "x-first-death-queue": "sms",
+  "x-first-death-reason": "rejected"
+}
+
+$ rabbitmqadmin publish exchange=payments routing_key=payment.completed payload='{"event":"PaymentCompleted","paymentId":"PAY-3003"}' properties='{"expiration":"5000"}'
+Message published
+
+$ curl -s -u guest:guest -X POST http://localhost:15672/api/queues/%2F/sms.dlq/get -H 'content-type: application/json' -d '{"count":2,"ackmode":"ack_requeue_true","encoding":"auto"}' | jq -c '.[] | [.payload, .properties.headers["x-death"][0].reason]'
+["{\"event\":\"PaymentCompleted\",\"paymentId\":\"PAY-2002\"}","rejected"]
+["{\"event\":\"PaymentCompleted\",\"paymentId\":\"PAY-3003\"}","expired"]
+
+$ rabbitmqadmin publish exchange=payments routing_key=payment.complete payload=typo
+Message published but NOT routed
+===DONE

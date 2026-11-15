@@ -1,0 +1,1 @@
+<%@ page contentType="text/plain" %><% Integer n=(Integer)session.getAttribute("n"); n = n==null?1:n+1; session.setAttribute("n",n); %>port=<%= request.getLocalPort() %> session=<%= session.getId() %> visits=<%= n %> timeout=<%= session.getMaxInactiveInterval() %>s

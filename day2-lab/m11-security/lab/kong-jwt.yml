@@ -1,0 +1,31 @@
+_format_version: "3.0"
+services:
+- name: payment
+  url: http://127.0.0.1:8080/payment
+  routes:
+  - name: payment-route
+    paths: [ /api/payment ]
+- name: payment-v2
+  url: http://127.0.0.1:8080/payment
+  routes:
+  - name: payment-v2-route
+    paths: [ /api/v2/payment ]
+plugins:
+- name: key-auth
+  service: payment
+- name: rate-limiting
+  service: payment
+  config: { minute: 5, policy: local }
+- name: jwt
+  service: payment-v2
+  config:
+    claims_to_verify: [ exp ]
+    maximum_expiration: 3600
+consumers:
+- username: mobile-app
+  keyauth_credentials:
+  - key: demo-key-123
+  jwt_secrets:
+  - key: https://auth.example.com
+    secret: paybank-lab-secret-do-not-reuse-1
+    algorithm: HS256

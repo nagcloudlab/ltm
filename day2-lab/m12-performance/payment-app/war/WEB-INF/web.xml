@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee" version="6.0">
+  <servlet><servlet-name>Status</servlet-name><servlet-class>com.example.StatusServlet</servlet-class></servlet>
+  <servlet-mapping><servlet-name>Status</servlet-name><url-pattern>/status</url-pattern></servlet-mapping>
+  <servlet><servlet-name>Fail</servlet-name><servlet-class>com.example.FailServlet</servlet-class></servlet>
+  <servlet-mapping><servlet-name>Fail</servlet-name><url-pattern>/fail</url-pattern></servlet-mapping>
+  <servlet><servlet-name>Slow</servlet-name><servlet-class>com.example.SlowServlet</servlet-class></servlet>
+  <servlet-mapping><servlet-name>Slow</servlet-name><url-pattern>/slow</url-pattern></servlet-mapping>
+  <servlet><servlet-name>Node</servlet-name><servlet-class>com.example.NodeServlet</servlet-class></servlet>
+  <servlet-mapping><servlet-name>Node</servlet-name><url-pattern>/node</url-pattern></servlet-mapping>
+  <servlet><servlet-name>Whoami</servlet-name><servlet-class>com.example.WhoamiServlet</servlet-class></servlet>
+  <servlet-mapping><servlet-name>Whoami</servlet-name><url-pattern>/whoami</url-pattern></servlet-mapping>
+  <servlet><servlet-name>Session</servlet-name><servlet-class>com.example.SessionServlet</servlet-class></servlet>
+  <servlet-mapping><servlet-name>Session</servlet-name><url-pattern>/session</url-pattern></servlet-mapping>
+  <servlet><servlet-name>Db</servlet-name><servlet-class>com.example.DbServlet</servlet-class></servlet>
+  <servlet-mapping><servlet-name>Db</servlet-name><url-pattern>/db</url-pattern></servlet-mapping>
+  <servlet><servlet-name>Leak</servlet-name><servlet-class>com.example.LeakServlet</servlet-class></servlet>
+  <servlet-mapping><servlet-name>Leak</servlet-name><url-pattern>/leak</url-pattern></servlet-mapping>
+  <session-config>
+    <session-timeout>30</session-timeout>
+  </session-config>
+</web-app>

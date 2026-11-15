@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Payment Operations Portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="/"><span class="logo">P</span>Payment Operations Portal</a>
+  <nav class="nav" aria-label="Main">
+    <a href="/" aria-current="page">Home</a>
+    <a href="/payment/status">Service health</a>
+    <a href="/admin/">Admin</a>
+    <a href="/health.txt">health.txt</a>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Release 1.0 · Middleware administration lab</p>
+      <h1>Payment Operations Portal</h1>
+      <p class="lead">This page is a prepared static file. Your web server reads it from disk and sends it to your browser. The payment links below are answered by a Java application once you connect the web server to Tomcat.</p>
+    </div>
+    <aside class="served" aria-label="Which server answered">
+      <h3>Who answered this page?</h3>
+      <dl>
+        <dt>Address</dt><dd id="where">see your browser’s address bar</dd>
+        <dt>Port 80</dt><dd>Apache (Lab 1)</dd>
+        <dt>Port 8081</dt><dd>Nginx (Lab 2)</dd>
+      </dl>
+      <p class="note">Same files, two web servers. Prove it with <code>curl -I</code> and compare the <code>Server</code> header.</p>
+    </aside>
+  </section>
+
+  <section class="grid" aria-label="Portal links">
+    <article class="card">
+      <span class="badge wait">After Lab 4</span>
+      <h3>Payment service health</h3>
+      <p>Forwarded by the web server to Tomcat. Expect <code>Payment Service OK</code>.</p>
+      <a class="go" href="/payment/status">/payment/status →</a>
+    </article>
+    <article class="card">
+      <span class="badge wait">After Lab 4</span>
+      <h3>Demo account balance</h3>
+      <p>JSON from the Java application. Sample data only, no real money.</p>
+      <a class="go" href="/payment/balance">/payment/balance →</a>
+    </article>
+    <article class="card">
+      <span class="badge ok">Lab 1</span>
+      <h3>Static web health</h3>
+      <p>A plain text file served straight from disk. Expect <code>WEB PORTAL OK</code>.</p>
+      <a class="go" href="/health.txt">/health.txt →</a>
+    </article>
+    <article class="card">
+      <span class="badge lock">Login</span>
+      <h3>Administrator area</h3>
+      <p>Protected with Basic authentication. Without a login you get <code>401</code>.</p>
+      <a class="go" href="/admin/">/admin/ →</a>
+    </article>
+    <article class="card">
+      <span class="badge lock">Denied</span>
+      <h3>Internal notes</h3>
+      <p>Blocked by the web server for everyone. Expect <code>403</code>.</p>
+      <a class="go" href="/private/">/private/ →</a>
+    </article>
+    <article class="card">
+      <span class="badge ok">Try it</span>
+      <h3>A page that does not exist</h3>
+      <p>Shows the portal’s custom error page with status <code>404</code>.</p>
+      <a class="go" href="/no-such-page.html">/no-such-page.html →</a>
+    </article>
+  </section>
+
+  <section class="panel" aria-label="Request path">
+    <h2>How a request travels in this lab</h2>
+    <div class="flow">
+      <div class="hop"><b>Browser / curl</b><span>your laptop</span></div>
+      <div class="arrow">→</div>
+      <div class="hop"><b>Apache :80</b><span>or Nginx :8081</span></div>
+      <div class="arrow">→</div>
+      <div class="hop app"><b>Tomcat :8080</b><span>payment.war (loopback)</span></div>
+    </div>
+    <div class="flow">
+      <div class="hop"><b>curl + API key</b><span>your laptop</span></div>
+      <div class="arrow">→</div>
+      <div class="hop gw"><b>Kong :8000</b><span>keys · ACL · rate limit</span></div>
+      <div class="arrow">→</div>
+      <div class="hop app"><b>Tomcat :8080</b><span>/payment/…</span></div>
+    </div>
+    <p class="note">At every hop, check three things: is the process running, is the port listening, and does the URL answer?</p>
+  </section>
+
+  <section class="panel" aria-label="API gateway">
+    <h2>Calling the API through the gateway (Lab 5)</h2>
+    <p class="lead">The gateway uses <code>/api/payment/status</code> on port 8000 and requires an API key. This page never sends a key for you; use curl:</p>
+<pre><code>curl -i -H 'apikey: demo-key-123' http://127.0.0.1:8000/api/payment/status</code></pre>
+    <table>
+      <tr><th>You send</th><th>Expected</th><th>Made by</th></tr>
+      <tr><td>no key</td><td>401</td><td>Kong key-auth</td></tr>
+      <tr><td>blocked partner key</td><td>403</td><td>Kong ACL</td></tr>
+      <tr><td>more than 5 calls a minute</td><td>429</td><td>Kong rate limiting</td></tr>
+      <tr><td>valid key, Tomcat stopped</td><td>502</td><td>Kong (upstream refused)</td></tr>
+    </table>
+  </section>
+</main>
+
+<footer><div class="wrap">
+  <span>Payment Operations Portal · Release 1.0 · classroom sample data</span>
+  <span>Static files in <code>/var/www/payment-portal</code></span>
+</div></footer>
+<script>
+  document.getElementById('where').textContent = location.host || 'local file';
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+[Unit]
+Description=Payment lab Kong API gateway
+After=network.target tomcat.service
+[Service]
+Type=forking
+User=kong-lab
+Group=kong-lab
+PIDFile=/var/lib/kong-lab/pids/nginx.pid
+ExecStart=/usr/local/bin/kong start -c /etc/kong-lab/kong.conf
+ExecReload=/usr/local/bin/kong reload -c /etc/kong-lab/kong.conf
+ExecStop=/usr/local/bin/kong quit -p /var/lib/kong-lab
+Restart=on-failure
+RestartSec=3
+TimeoutStartSec=60
+TimeoutStopSec=30
+LimitNOFILE=65536
+UMask=0027
+[Install]
+WantedBy=multi-user.target

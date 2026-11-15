@@ -1,0 +1,13 @@
+_format_version: "3.0"
+_transform: true
+services:
+  - name: payment
+    url: http://127.0.0.1:8080/payment
+    connect_timeout: 3000
+    read_timeout: 10000
+    retries: 0
+    routes:
+      - name: payment-route
+        paths: [ /api/payment ]
+        strip_path: true
+        path_handling: v0

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee" version="6.0">
+  <servlet><servlet-name>status</servlet-name><jsp-file>/status.jsp</jsp-file></servlet>
+  <servlet-mapping><servlet-name>status</servlet-name><url-pattern>/status</url-pattern></servlet-mapping>
+  <servlet><servlet-name>fail</servlet-name><jsp-file>/fail.jsp</jsp-file></servlet>
+  <servlet-mapping><servlet-name>fail</servlet-name><url-pattern>/fail</url-pattern></servlet-mapping>
+  <servlet><servlet-name>slow</servlet-name><jsp-file>/slow.jsp</jsp-file></servlet>
+  <servlet-mapping><servlet-name>slow</servlet-name><url-pattern>/slow</url-pattern></servlet-mapping>
+  <servlet><servlet-name>node</servlet-name><jsp-file>/node.jsp</jsp-file></servlet>
+  <servlet-mapping><servlet-name>node</servlet-name><url-pattern>/node</url-pattern></servlet-mapping>
+  <servlet><servlet-name>whoami</servlet-name><jsp-file>/whoami.jsp</jsp-file></servlet>
+  <servlet-mapping><servlet-name>whoami</servlet-name><url-pattern>/whoami</url-pattern></servlet-mapping>
+  <servlet><servlet-name>session</servlet-name><jsp-file>/session.jsp</jsp-file></servlet>
+  <servlet-mapping><servlet-name>session</servlet-name><url-pattern>/session</url-pattern></servlet-mapping>
+  <servlet><servlet-name>db</servlet-name><jsp-file>/db.jsp</jsp-file></servlet>
+  <servlet-mapping><servlet-name>db</servlet-name><url-pattern>/db</url-pattern></servlet-mapping>
+  <servlet><servlet-name>leak</servlet-name><jsp-file>/leak.jsp</jsp-file></servlet>
+  <servlet-mapping><servlet-name>leak</servlet-name><url-pattern>/leak</url-pattern></servlet-mapping>
+  <session-config><session-timeout>30</session-timeout></session-config>
+  <resource-ref><res-ref-name>jdbc/paymentDB</res-ref-name><res-type>javax.sql.DataSource</res-type><res-auth>Container</res-auth></resource-ref>
+</web-app>

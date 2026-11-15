@@ -1,0 +1,20 @@
+_format_version: "3.0"
+services:
+- name: payment
+  url: http://127.0.0.1:8081/payment
+  read_timeout: 5000
+  routes:
+  - name: payment-route
+    paths: [ /api/payment ]
+plugins:
+- name: key-auth
+  service: payment
+- name: correlation-id
+  config:
+    header_name: X-Request-ID
+    generator: uuid
+    echo_downstream: true
+consumers:
+- username: mobile-app
+  keyauth_credentials:
+  - key: demo-key-123

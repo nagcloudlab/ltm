@@ -1,0 +1,2 @@
+# Application build tools must not create generated class files in Git.
+payment-app/build/

@@ -1,0 +1,26 @@
+
+$ curl -i -X POST localhost:8080/payment/transfer
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+curl: (7) Failed to connect to localhost port 8080 after 1 ms: Couldn't connect to server
+
+$ time curl -I localhost:8081/payment/transfer
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0   166    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+HTTP/1.1 502 Bad Gateway
+Server: nginx/1.24.0 (Ubuntu)
+Date: Sun, 15 Nov 2026 06:12:21 GMT
+Content-Type: text/html
+Content-Length: 166
+Connection: keep-alive
+
+
+real	0m0.156s
+user	0m0.003s
+sys	0m0.025s
+
+$ sudo tail -1 /var/log/nginx/error.log
+2026/11/15 06:12:21 [error] 16939#16939: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 127.0.0.1, server: , request: "HEAD /payment/transfer HTTP/1.1", upstream: "http://127.0.0.1:8080/payment/transfer", host: "localhost:8081"
+===DONE

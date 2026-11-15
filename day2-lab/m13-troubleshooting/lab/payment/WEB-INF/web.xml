@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee" version="6.0">
+  <servlet><servlet-name>status</servlet-name><jsp-file>/status.jsp</jsp-file></servlet>
+  <servlet-mapping><servlet-name>status</servlet-name><url-pattern>/status</url-pattern></servlet-mapping>
+  <servlet><servlet-name>fail</servlet-name><jsp-file>/fail.jsp</jsp-file></servlet>
+  <servlet-mapping><servlet-name>fail</servlet-name><url-pattern>/fail</url-pattern></servlet-mapping>
+  <servlet><servlet-name>slow</servlet-name><jsp-file>/slow.jsp</jsp-file></servlet>
+  <servlet-mapping><servlet-name>slow</servlet-name><url-pattern>/slow</url-pattern></servlet-mapping>
+  <servlet><servlet-name>transfer</servlet-name><jsp-file>/transfer.jsp</jsp-file></servlet>
+  <servlet-mapping><servlet-name>transfer</servlet-name><url-pattern>/transfer</url-pattern></servlet-mapping>
+</web-app>

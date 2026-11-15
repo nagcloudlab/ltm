@@ -1,0 +1,37 @@
+_format_version: "3.0"
+_transform: true
+services:
+  - name: payment
+    url: http://127.0.0.1:8080/payment
+    connect_timeout: 3000
+    read_timeout: 10000
+    retries: 0
+    routes:
+      - name: payment-route
+        paths: [ /api/payment ]
+        strip_path: true
+        path_handling: v0
+
+consumers:
+  - username: mobile-app
+    keyauth_credentials:
+      - key: demo-key-123
+    acls:
+      - group: payment-users
+  - username: blocked-partner
+    keyauth_credentials:
+      - key: blocked-key-456
+plugins:
+  - name: key-auth
+    service: payment
+    config:
+      key_names: [ apikey ]
+      hide_credentials: true
+      key_in_query: false
+      key_in_body: false
+
+  - name: acl
+    service: payment
+    config:
+      allow: [ payment-users ]
+      hide_groups_header: true

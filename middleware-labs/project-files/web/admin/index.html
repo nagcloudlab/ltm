@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Administrator area · Payment Operations Portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="/"><span class="logo">P</span>Payment Operations Portal</a>
+  <nav class="nav" aria-label="Main">
+    <a href="/">Home</a>
+    <a href="/admin/" aria-current="page">Admin</a>
+  </nav>
+</div></header>
+<main class="wrap">
+  <p class="eyebrow">Signed in with Basic authentication</p>
+  <h1>Payment operations: administrator area</h1>
+  <p class="lead">You see this page because the web server accepted your user name and password. Without them it answers <code>401 Unauthorized</code>; with a wrong password, also <code>401</code>.</p>
+
+  <div class="callout">Sample dashboard for the lab. The numbers below are fixed text, not live data.</div>
+
+  <section class="kpis" aria-label="Sample figures">
+    <div class="kpi"><div class="label">Payments today</div><div class="value">12,480</div></div>
+    <div class="kpi"><div class="label">Success rate</div><div class="value">99.2%</div></div>
+    <div class="kpi"><div class="label">Avg response</div><div class="value">180 ms</div></div>
+    <div class="kpi"><div class="label">Open incidents</div><div class="value">1</div></div>
+  </section>
+
+  <section class="panel">
+    <h2>Operator checklist</h2>
+    <table>
+      <tr><th>Check</th><th>Command</th></tr>
+      <tr><td>Web servers running</td><td><code>systemctl is-active apache2 nginx</code></td></tr>
+      <tr><td>Ports listening</td><td><code>sudo ss -lntp</code></td></tr>
+      <tr><td>Java service answers</td><td><code>curl -s http://127.0.0.1:8080/payment/status</code></td></tr>
+      <tr><td>Recent errors</td><td><code>sudo tail -n 20 /var/log/apache2/payment-error.log</code></td></tr>
+      <tr><td>Status codes so far</td><td><code>sudo awk '{print $9}' /var/log/apache2/payment-access.log | sort | uniq -c</code></td></tr>
+    </table>
+  </section>
+  <a class="button" href="/">Back to the portal</a>
+</main>
+<footer><div class="wrap"><span>Administrator area · protected by the web server, not by this page</span></div></footer>
+</body>
+</html>

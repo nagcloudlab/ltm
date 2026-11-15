@@ -1,0 +1,7 @@
+database = off
+declarative_config = /etc/kong/kong.yml
+nginx_worker_processes = 1
+nginx_http_log_format = trace '$remote_addr - [$time_local] "$request" $status $body_bytes_sent rt=$request_time urt=$upstream_response_time rid=$http_x_request_id kong_request_id=$kong_request_id'
+proxy_access_log = logs/access.log trace
+ssl_cert = /etc/kong/ssl/api-chain.crt
+ssl_cert_key = /etc/kong/ssl/api.key

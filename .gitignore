@@ -22,3 +22,7 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Prepared middleware teaching artifacts are intentionally versioned.
+!middleware-labs/project-files/apps/*.war
+!middleware-labs/project-files/downloads/apache-tomcat-*.tar.gz

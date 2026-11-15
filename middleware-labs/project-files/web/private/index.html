@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Internal notes · Payment Operations Portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="/"><span class="logo">P</span>Payment Operations Portal</a>
+</div></header>
+<main class="wrap">
+  <h1>Internal payment operations notes — lab sample</h1>
+  <div class="callout secret">If you can read this page in a browser, the web server’s access rule for <code>/private/</code> is not working. Visitors should get <code>403 Forbidden</code>.</div>
+  <section class="panel">
+    <h2>Why this folder exists</h2>
+    <p class="note">The file is present on disk and readable by the web server user, so a 403 here proves the block comes from configuration (<code>Require all denied</code> in Apache, <code>deny all</code> in Nginx), not from file permissions.</p>
+  </section>
+</main>
+</body>
+</html>
