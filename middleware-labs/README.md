@@ -1,30 +1,56 @@
 # Ubuntu middleware labs — Payment Operations
 
-Five incremental labs, one project, your Ubuntu laptop. Install, configure, deploy, observe, break and recover middleware. The website and Java application are prepared in advance. No application coding is required.
-
-You run these labs on your Ubuntu laptop after cloning this repository. All website files, compiled WARs, configuration stages and the Tomcat distribution are already included.
+- Seven incremental labs, one project, your Ubuntu laptop: install, configure, deploy, observe, break and recover middleware.
+- Website files, compiled WARs, configuration stages and the Tomcat distribution are included. No application coding is required.
 
 ## Start on your Ubuntu laptop
 
+Refresh package lists:
+
 ```bash
 sudo apt update
+```
+
+Install Git:
+
+```bash
 sudo apt install -y git
+```
+
+Go to your home folder:
+
+```bash
 cd ~
+```
+
+Clone the repository:
+
+```bash
 git clone https://github.com/nagcloudlab/ltm.git ~/ltm
+```
+
+Enter the labs folder:
+
+```bash
 cd ~/ltm/middleware-labs
 ```
 
-If already cloned, use `cd ~/ltm && git pull --ff-only` instead. Follow [laptop setup](00-student-start.md), then the five guides below in order. See [preparation and recovery notes](00-preparation.md) and the [validation record](VALIDATION.md).
+- Already cloned? Use `cd ~/ltm && git pull --ff-only` instead.
+- Then follow [laptop setup](00-student-start.md) and the guides below in order.
+- See also: [preparation and recovery notes](00-preparation.md), [validation record](VALIDATION.md).
 
-| Lab | Guide | What you add | Suggested time |
-| --- | --- | --- | --- |
-| 1 | [Apache](01-apache.md) | Static portal, virtual host, permissions, authentication, logs | 75–90 min |
-| 2 | [Nginx](02-nginx.md) | Same portal on a second web server, server blocks, logs | 60–75 min |
-| 3 | [Tomcat](03-tomcat.md) | Java service, WAR deployment, systemd, application errors | 75–90 min |
-| 4 | [Reverse proxies](04-reverse-proxy.md) | Apache and Nginx both forward to Tomcat | 75–90 min |
-| 5 | [API gateway](05-api-gateway.md) | Kong routes, consumers, API keys, ACLs and rate limiting | 75–90 min |
+| Lab | Guide | What you add |
+| --- | --- | --- |
+| 0 | [Linux skills](00-linux-skills.md) | Navigation, vi, permissions, processes, ports, services, logs, archives |
+| 1 | [Apache](01-apache.md) | Static portal, virtual host, permissions, authentication, logs |
+| 2 | [Nginx](02-nginx.md) | Same portal on a second web server, server blocks, logs |
+| 3 | [Tomcat](03-tomcat.md) | Java service, WAR deployment, systemd, application errors |
+| 4 | [Reverse proxies](04-reverse-proxy.md) | Apache and Nginx both forward to Tomcat |
+| 5 | [API gateway](05-api-gateway.md) | Kong routes, consumers, API keys, ACLs and rate limiting |
+| 6 | [Reading logs](07-reading-logs.md) | Every log in the stack, one request across hops, IST/UTC, IIS logs on Linux |
+| — | [Troubleshooting drills](08-troubleshooting-drills.md) | 14 break → evidence → fix scenarios with the owning team |
 
-Allow additional setup and breaks. The complete series needs roughly 6–7.5 hours of hands-on time; split it across sessions if the Day 1 presentation is also taught in full.
+- After the labs: record results in the [evidence worksheet](06-student-evidence.md), then compare with the [knowledge-check answers](09-knowledge-check-answers.md).
 
 ## The project grows in place
 
@@ -36,29 +62,58 @@ Lab 4: curl -> Apache :80 OR Nginx :8081 -> Tomcat -> payment.war
 Lab 5: curl -> Kong :8000 -> Tomcat -> payment.war
 ```
 
-Apache, Nginx, Tomcat and Kong run as native Ubuntu services. Kong Admin API and Tomcat stay on loopback. The two web proxies remain separate comparison paths; the gateway guide includes a final lockdown exercise.
-
-This is a classroom topology with sample data and sample secrets. API keys are sent with curl; the static page does not embed a secret or automatically call the secured gateway. No database or real money is involved.
+- Apache, Nginx, Tomcat and Kong run as native Ubuntu services.
+- Kong Admin API and Tomcat stay on loopback.
+- The two web proxies stay separate comparison paths; the gateway guide ends with a lockdown exercise.
+- Classroom topology: sample data, sample secrets, no database, no real money. API keys are sent with curl; the static page embeds no secret and does not call the secured gateway.
 
 ## Repository layout
 
-- `project-files/web/`: finished portal files.
-- `project-files/apps/`: ready-to-deploy good and deliberately broken WARs.
-- `project-files/config/`: reference configurations to copy and inspect.
-- `project-files/kong/`: four complete gateway stages.
-- `payment-app/`: payment application source and reference scripts. The application is already built; you do not need to run these scripts.
-- `06-student-evidence.md`: per-lab evidence worksheet and final incident.
+- `project-files/web/` — finished portal files
+- `project-files/apps/` — ready-to-deploy good and deliberately broken WARs
+- `project-files/config/` — reference configurations to copy and inspect
+- `project-files/kong/` — four complete gateway stages
+- `project-files/samples/` — fixed sample logs (Apache, Nginx, Tomcat, Kong, IIS) for Lab 6
+- `payment-app/` — application source and reference scripts (already built; you need not run them)
+- `06-student-evidence.md` — per-lab evidence worksheet and final incident
 
-All command blocks target Bash on Ubuntu 24.04 LTS. Run as a normal sudo-capable user. Commands do not include prompt symbols. Do not continue past a failed verification. Keep the same laptop across all five labs.
+## Ground rules
+
+- Bash on Ubuntu 24.04 LTS, as a normal sudo-capable user. Commands have no prompt symbols.
+- Do not continue past a failed verification.
+- Keep the same laptop across all labs.
 
 ## Update between sessions
 
+Go to the repository:
+
 ```bash
 cd ~/ltm
+```
+
+Check for local changes:
+
+```bash
 git status --short
+```
+
+Pull updates:
+
+```bash
 git pull --ff-only
+```
+
+Enter the project files:
+
+```bash
 cd middleware-labs/project-files
+```
+
+Verify checksums:
+
+```bash
 sha256sum -c SHA256SUMS
 ```
 
-Reference paths in every guide use `~/ltm/middleware-labs/project-files/`. Store evidence and backups under `~/lab/`. Practice on installed copies under `/etc`, `/var/www`, and `/opt/tomcat`; pulling the repository does not overwrite those installed copies or restart services.
+- Guides reference `~/ltm/middleware-labs/project-files/`; evidence and backups go under `~/lab/`.
+- Practice on installed copies under `/etc`, `/var/www` and `/opt/tomcat`. Pulling does not overwrite them or restart services.

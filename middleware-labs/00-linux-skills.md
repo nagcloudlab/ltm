@@ -1,392 +1,869 @@
 # Lab 0 — Linux skills for middleware administrators
 
-**Time:** 60–75 minutes. **Prerequisite:** [student start](00-student-start.md) completed on your Ubuntu 24.04 laptop. **Deliverable:** you can move around the file system, edit a file with vi, read permissions, find processes, ports and services, search logs and make a verified backup — all with built-in Ubuntu tools.
+- **Needs:** [student start](00-student-start.md) completed on your Ubuntu 24.04 laptop
+- **You build:** the basic skills every later lab uses — files, vi, permissions, processes, ports, services, logs and verified backups, with built-in Ubuntu tools
 
-Every later lab uses these commands. You practise here on harmless files under `~/lab/practice`, before any web server or application server is installed.
-
-- Run every command as your normal account. Use `sudo` only where it is shown.
-- Everything you create in this lab lives under `~/lab`. You never delete or change system files here.
-- If a command prints an error you did not expect, stop and read the error first. Reading error messages is a core skill.
+- Run every command as your normal account; use `sudo` only where shown.
+- Everything you create lives under `~/lab`. No system files are changed.
+- An unexpected error? Stop and read it first — reading errors is a core skill.
 
 ## 1. Who and where am I?
 
+- Know which account you are and which folder you are in before you change anything.
+
+Show your user name:
+
 ```bash
 whoami
+```
+
+Show your user number and groups:
+
+```bash
 id
+```
+
+Show the machine name:
+
+```bash
 hostname
+```
+
+Show the current folder:
+
+```bash
 pwd
+```
+
+Show date and time:
+
+```bash
 date
 ```
 
-- `whoami` prints your user name; `id` adds your user number and groups.
-- `pwd` (print working directory) shows the folder you are in. A new terminal starts in your home folder, `/home/<your-name>`.
-- `~` is a short way of writing your home folder.
+- A new terminal starts in your home folder, `/home/<your-name>`; `~` is short for it.
 
 ## 2. Move around the file system
 
+List files:
+
 ```bash
 ls
+```
+
+Long listing (type, permissions, owner, group, size, date, name):
+
+```bash
 ls -l
+```
+
+Include hidden files (names starting with `.`, e.g. `.bashrc`):
+
+```bash
 ls -la
+```
+
+Human-readable sizes:
+
+```bash
 ls -lh /etc/hostname /etc/hosts
+```
+
+Go to `/etc`:
+
+```bash
 cd /etc
+```
+
+Check where you are:
+
+```bash
 pwd
+```
+
+Go home:
+
+```bash
 cd ~
+```
+
+Check again:
+
+```bash
 pwd
+```
+
+Go back to the previous folder:
+
+```bash
 cd -
+```
+
+Go home (short form):
+
+```bash
 cd
 ```
 
-- `ls -l` shows the long listing: type and permissions, owner, group, size, date and name.
-- `ls -a` also shows hidden files, whose names start with a dot (for example `.bashrc`).
-- `cd -` goes back to the previous folder; `cd` on its own goes home.
-- An **absolute path** starts with `/` (`/etc/hosts`). A **relative path** starts from where you are (`lab/evidence`).
+- **Absolute path** starts with `/` (`/etc/hosts`); **relative path** starts from where you are (`lab/evidence`).
 
-The `tree` command is not always installed. These built-in commands show a folder structure instead:
+Show a folder structure (`tree` is not always installed):
 
 ```bash
 find ~/lab -maxdepth 2
+```
+
+Same, recursively with `ls`:
+
+```bash
 ls -R ~/lab
 ```
 
 ## 3. The middleware directory map
 
-These are the folders you will use in every lab. Some of them do not exist yet because the software is not installed.
+- Folders you use in every lab. Some do not exist until the software is installed.
 
 | Path | What lives there | Example in these labs |
 | --- | --- | --- |
-| `/etc` | Configuration files | `/etc/apache2`, `/etc/nginx`, `/etc/kong-lab`, `/etc/hosts` |
-| `/etc/systemd/system` | Service (unit) files added by an administrator | `tomcat.service`, `payment-kong.service` |
-| `/var/log` | Log files | `/var/log/apache2`, `/var/log/nginx`, `/var/log/kong-lab` |
+| `/etc` | Configuration | `/etc/apache2`, `/etc/nginx`, `/etc/kong-lab`, `/etc/hosts` |
+| `/etc/systemd/system` | Admin-added service (unit) files | `tomcat.service`, `payment-kong.service` |
+| `/var/log` | Logs | `/var/log/apache2`, `/var/log/nginx`, `/var/log/kong-lab` |
 | `/var/www` | Web content | `/var/www/payment-portal` |
-| `/opt` | Software installed by hand, outside the package manager | `/opt/tomcat` |
+| `/opt` | Software installed by hand | `/opt/tomcat` |
 | `/usr/lib/jvm` | Java installations | `/usr/lib/jvm/java-21-lab` |
-| `~/lab` | Your own evidence, backups and practice files | `~/lab/evidence`, `~/lab/backups` |
+| `~/lab` | Your evidence, backups, practice files | `~/lab/evidence`, `~/lab/backups` |
+
+Show the folders themselves (`-d`), not their contents:
 
 ```bash
 ls -ld /etc /var/log /opt /home
+```
+
+Check the folders created in later labs:
+
+```bash
 ls -ld /var/www /usr/lib/jvm /opt/tomcat
+```
+
+- **Expected:** `No such file or directory` for some paths before Labs 1 and 3. The message names the exact missing path.
+
+List the log folders:
+
+```bash
 ls /var/log
 ```
 
-- The second command may print `No such file or directory` for some paths. That is expected before Labs 1 and 3. Read the message: it names the exact path that is missing.
-- `ls -ld` shows the folder itself, not its contents.
-
 ## 4. Create, copy, move and remove files
 
-Build a practice area:
+- Build a harmless practice area.
+
+Create folders (`-p` adds missing parents, no error if they exist):
 
 ```bash
 mkdir -p ~/lab/practice/conf ~/lab/practice/logs ~/lab/practice/old
+```
+
+Enter it:
+
+```bash
 cd ~/lab/practice
+```
+
+Create an empty file:
+
+```bash
 touch notes.txt
+```
+
+Write a line (`>` **replaces** the content):
+
+```bash
 echo "first line" > notes.txt
+```
+
+Append a line (`>>` **adds** to the end):
+
+```bash
 echo "second line" >> notes.txt
+```
+
+Show the file:
+
+```bash
 cat notes.txt
+```
+
+Count lines:
+
+```bash
 wc -l notes.txt
 ```
 
-- `mkdir -p` creates the folder and any missing parent folders, and does not complain if it already exists.
-- `>` **replaces** a file's content. `>>` **adds** to the end. Mixing them up is a classic way to lose a config file.
+- Mixing up `>` and `>>` is a classic way to lose a config file.
+
+Copy a file:
 
 ```bash
 cp notes.txt notes.bak
+```
+
+Copy a folder with permissions and dates (use for backups):
+
+```bash
 cp -a conf conf-copy
+```
+
+Move a file:
+
+```bash
 mv notes.bak old/
+```
+
+Rename (same command):
+
+```bash
 mv conf-copy conf-renamed
+```
+
+Check both folders:
+
+```bash
 ls -l . old
+```
+
+Remove a file — there is no recycle bin, read the path twice:
+
+```bash
 rm old/notes.bak
+```
+
+Remove an empty folder (refuses if it still has files):
+
+```bash
 rmdir conf-renamed
+```
+
+Check:
+
+```bash
 ls -la
 ```
 
-- `cp -a` copies a folder with its permissions and dates. Use it for backups.
-- `mv` both moves and renames.
-- `rm` has no recycle bin. Before you run it, read the path twice. Use `rmdir` for empty folders: it refuses to remove a folder that still has files.
-
-Look at files without opening an editor:
+Look at files without an editor — first lines:
 
 ```bash
 head -n 3 /etc/passwd
+```
+
+Last lines:
+
+```bash
 tail -n 3 /etc/passwd
+```
+
+File type:
+
+```bash
 file /etc/hosts /usr/bin/ls
+```
+
+Size, permissions and dates:
+
+```bash
 stat notes.txt
 ```
 
 ## 5. Edit a file with vi
 
-On a server there is often no graphical editor. `vi` (on Ubuntu, `vim`) is always there. Create a practice config file:
+- Servers often have no graphical editor; `vi` (on Ubuntu, `vim`) is always there.
+
+Go to the conf folder:
 
 ```bash
 cd ~/lab/practice/conf
+```
+
+Create a practice config:
+
+```bash
 printf 'name=payment\nport=8080\nlog_level=INFO\ntimeout=10\n' > app.conf
+```
+
+Show it:
+
+```bash
 cat app.conf
 ```
 
-vi has two main modes:
+- **Normal mode** (start): keys are commands. **Insert mode**: keys type text — `i` enters, `Esc` leaves.
 
-- **Normal mode** (where you start): keys are commands, not text.
-- **Insert mode**: keys type text. Press `i` to enter it and `Esc` to leave it.
-
-| Keys (in normal mode) | What they do |
+| Keys (normal mode) | Action |
 | --- | --- |
-| `i` | Start typing before the cursor (insert mode) |
-| `Esc` | Back to normal mode |
-| `:w` then Enter | Save (write) |
-| `:q` then Enter | Quit |
-| `:wq` then Enter | Save and quit |
-| `:q!` then Enter | Quit **without** saving |
-| `/port` then Enter | Search for `port`; `n` finds the next match |
-| `u` | Undo the last change |
-| `dd` | Delete the current line |
-| `yy` then `p` | Copy the line, then paste it below |
-| `gg` / `G` | Go to the first / last line |
-| `:set number` | Show line numbers |
+| `i` / `Esc` | Insert mode / back to normal mode |
+| `:w` / `:q` / `:wq` + Enter | Save / quit / save and quit |
+| `:q!` + Enter | Quit **without** saving |
+| `/port` + Enter, then `n` | Search, next match |
+| `u` / `dd` / `yy` then `p` | Undo / delete line / copy line and paste below |
+| `gg` / `G` / `:set number` | First line / last line / line numbers |
 
-Practice task:
+Open the file:
 
 ```bash
 vi ~/lab/practice/conf/app.conf
 ```
 
-- Type `/port` and Enter to jump to the port line.
-- Move the cursor onto `8080` with the arrow keys, press `i`, change the value to `8090`, press `Esc`.
-- Press `dd` on the `timeout=10` line, then `u` to undo it.
-- Type `:wq` and Enter.
+- Type `/port` + Enter to jump to the port line.
+- Arrow onto `8080`, press `i`, change it to `8090`, press `Esc`.
+- `dd` on the `timeout=10` line, then `u` to undo.
+- `:wq` + Enter.
 
-Check your edit without opening the file again:
+Check the edit:
 
 ```bash
 grep -n 'port' ~/lab/practice/conf/app.conf
 ```
 
-Expected: `2:port=8090`. If you get lost in vi, press `Esc` twice and type `:q!` — you leave without saving and can start again.
+- **Expected:** `2:port=8090`.
+- **If lost in vi:** `Esc` twice, then `:q!` — leave without saving and start again.
 
 ## 6. Permissions and ownership
 
+Go to the conf folder:
+
 ```bash
 cd ~/lab/practice/conf
+```
+
+Show permissions:
+
+```bash
 ls -l app.conf
 ```
 
-Sample output:
+- Sample output:
 
 ```text
--rw-rw-r-- 1 student student 45 Nov 11 10:05 app.conf
+-rw-rw-r-- 1 student student 49 Nov 11 10:05 app.conf
 ```
 
-- First character: `-` file, `d` directory, `l` symbolic link.
-- Then three groups of `rwx`: **owner**, **group**, **others**. `r` read, `w` write, `x` execute (for a directory, `x` means "may enter / pass through").
-- Then the owner (`student`) and group (`student`).
+- First character: `-` file, `d` directory, `l` link.
+- Then `rwx` for **owner**, **group**, **others**. On a directory, `x` = may enter / pass through.
+- Then owner (`student`) and group (`student`).
+- Numbers: `r=4`, `w=2`, `x=1`, added per group. `640` = owner `rw-`, group `r--`, others `---`.
 
-Numbers are a short form: `r=4`, `w=2`, `x=1`, added per group. `640` = owner `rw-`, group `r--`, others `---`.
+Set 640:
 
 ```bash
 chmod 640 app.conf
-ls -l app.conf
-chmod o+r app.conf
-ls -l app.conf
-chmod u+x,g-r app.conf
-ls -l app.conf
-chmod 644 app.conf
+```
+
+Check:
+
+```bash
 ls -l app.conf
 ```
 
-Common values in these labs:
+Add read for others:
+
+```bash
+chmod o+r app.conf
+```
+
+Check:
+
+```bash
+ls -l app.conf
+```
+
+Add execute for owner, remove read for group:
+
+```bash
+chmod u+x,g-r app.conf
+```
+
+Check:
+
+```bash
+ls -l app.conf
+```
+
+Back to 644:
+
+```bash
+chmod 644 app.conf
+```
+
+Check:
+
+```bash
+ls -l app.conf
+```
 
 | Mode | Used for |
 | --- | --- |
 | `644` | Normal readable files (web pages, configs) |
-| `640` | Files only the owner and one group may read (password files) |
+| `640` | Owner + one group only (password files) |
 | `755` | Folders and scripts everyone may enter or run |
-| `750` | Folders only the owner and one group may enter (`/opt/tomcat`) |
+| `750` | Folders for owner + one group only (`/opt/tomcat`) |
 
-Ownership changes need `sudo`:
+Give the file to root (ownership changes need `sudo`):
 
 ```bash
 sudo chown root:root app.conf
-ls -l app.conf
-echo "extra=1" >> app.conf
-sudo chown "$USER:$USER" app.conf
+```
+
+Check:
+
+```bash
 ls -l app.conf
 ```
 
-- The `echo` fails with `Permission denied`: the file now belongs to root and others may only read it. Changing it back to you fixes it.
+Try to append:
 
-A file is only readable if **every folder on the path** can be entered. `namei -l` shows each step:
+```bash
+echo "extra=1" >> app.conf
+```
+
+- **Expected:** `Permission denied` — root owns it, others may only read.
+
+Give it back to you:
+
+```bash
+sudo chown "$USER:$USER" app.conf
+```
+
+Check:
+
+```bash
+ls -l app.conf
+```
+
+- A file is readable only if **every folder on the path** can be entered.
+
+Show permissions of each step of the path:
 
 ```bash
 namei -l ~/lab/practice/conf/app.conf
+```
+
+Try to read it as the web server user:
+
+```bash
 sudo -u www-data cat ~/lab/practice/conf/app.conf
 ```
 
-- Ubuntu 24.04 home folders are `drwxr-x---` (750). The `www-data` user (the web server user) is "others" there, so it cannot pass through your home folder and gets `Permission denied`.
-- This is why web content goes in `/var/www`, not in a home folder.
+- **Expected:** `Permission denied`. Ubuntu 24.04 home folders are `drwxr-x---` (750); `www-data` is "others" and cannot pass through. That is why web content lives in `/var/www`.
 
-`umask` decides the permissions of new files:
+- `umask` decides the permissions of new files.
+
+Show the umask:
 
 ```bash
 umask
+```
+
+Create a file:
+
+```bash
 touch new-file.txt
+```
+
+Create a folder:
+
+```bash
 mkdir new-dir
+```
+
+Compare:
+
+```bash
 ls -ld new-file.txt new-dir
 ```
 
-- With `umask 0002` (usual for desktop users) new files are `664` and folders `775`. With `0022` (usual for servers and services) they are `644` and `755`.
-- The Tomcat and Kong unit files in later labs set `UMask=0027`, so their new log files are not readable by others.
+- `umask 0002` (desktop users): files `664`, folders `775`. `0022` (servers): `644` and `755`.
+- Tomcat and Kong unit files in later labs set `UMask=0027`, so their new logs are not readable by others.
 
 ## 7. Users, groups and sudo
 
+Show your account:
+
 ```bash
 id
+```
+
+Show your groups:
+
+```bash
 groups
+```
+
+Show the root account entry:
+
+```bash
 getent passwd root
+```
+
+Show the web server account:
+
+```bash
 getent passwd www-data
+```
+
+Show members of the `sudo` group:
+
+```bash
 getent group sudo
+```
+
+List what you may run with sudo:
+
+```bash
 sudo -l
 ```
 
-- `/etc/passwd` lines are `name:x:uid:gid:comment:home:shell`. Service accounts such as `www-data` use a shell like `/usr/sbin/nologin`: they run software, nobody logs in as them.
-- Members of the `sudo` group may run commands as root. `sudo -l` lists what you may do.
-- `sudo -u <user> <command>` runs one command as another user. You use it in later labs to check "can the service user read this file?".
+- `/etc/passwd` format: `name:x:uid:gid:comment:home:shell`. Service accounts like `www-data` have `/usr/sbin/nologin`: they run software, nobody logs in.
+- `sudo` group members may run commands as root.
+- `sudo -u <user> <command>` runs one command as another user — later labs use it to check "can the service user read this file?".
 
 ## 8. Processes
 
+- Every program is a **process** with a PID and a PPID (parent's PID).
+
+All processes, first lines:
+
 ```bash
 ps -ef | head -n 15
+```
+
+Chosen columns, busiest CPU first:
+
+```bash
 ps -eo pid,ppid,user,%cpu,%mem,cmd --sort=-%cpu | head -n 10
+```
+
+Find processes by name:
+
+```bash
 pgrep -a systemd
+```
+
+One `top` snapshot (batch mode, can be saved as evidence):
+
+```bash
 top -b -n 1 | head -n 15
 ```
 
-- Every running program is a **process** with a PID (process ID) and a PPID (parent's PID).
-- `ps -eo` lets you choose the columns; `--sort=-%cpu` puts the busiest first.
-- `pgrep -a <name>` finds processes by name.
-- `top -b -n 1` prints one snapshot (batch mode), which you can save as evidence. Plain `top` is interactive: `P` sorts by CPU, `M` by memory, `q` quits.
+- Plain `top` is interactive: `P` sort by CPU, `M` by memory, `q` quit.
 
-Start and stop a harmless background process:
+Start a harmless background process (`&`):
 
 ```bash
 sleep 600 &
-jobs
-pgrep -a sleep
-kill -TERM "$(pgrep -n sleep)"
+```
+
+List this terminal's background jobs:
+
+```bash
 jobs
 ```
 
-- `&` runs a command in the background; `jobs` lists background jobs of this terminal.
-- `kill -TERM` (signal 15, the default) asks a process to stop cleanly. It can tidy up and close files.
-- `kill -KILL` (signal 9) ends it immediately with no clean-up. Use it only when `-TERM` did not work. Services are normally stopped with `systemctl stop`, which sends `TERM` first.
+Find it:
 
-`nice` starts a process with lower priority so it disturbs others less:
+```bash
+pgrep -a sleep
+```
+
+Ask it to stop cleanly:
+
+```bash
+kill -TERM "$(pgrep -n -x sleep)"
+```
+
+Check it is gone:
+
+```bash
+jobs
+```
+
+- `kill -TERM` (15, default): stop cleanly, close files. `kill -KILL` (9): immediate, no clean-up — only if `TERM` fails. `systemctl stop` sends `TERM` first.
+
+Start a process with lower priority (`nice`):
 
 ```bash
 nice -n 10 sleep 30 &
-ps -o pid,ni,cmd -p "$(pgrep -n sleep)"
-kill "$(pgrep -n sleep)"
 ```
 
-Expected: the `NI` column shows `10`.
+Show its priority:
+
+```bash
+ps -o pid,ni,cmd -p "$(pgrep -n -x sleep)"
+```
+
+- **Expected:** `NI` column shows `10`.
+
+Stop it:
+
+```bash
+kill "$(pgrep -n -x sleep)"
+```
 
 ## 9. Memory, disk and load
 
+Memory:
+
 ```bash
 free -h
+```
+
+- Read **available**, not **free** — Linux uses spare memory as cache.
+
+Disk space per file system:
+
+```bash
 df -h
+```
+
+Space where logs live:
+
+```bash
 df -h /var/log
+```
+
+- If the `/var/log` file system hits 100 %, services cannot write logs and may fail.
+
+Size of one folder:
+
+```bash
 du -sh ~/lab
+```
+
+Size of the log folder:
+
+```bash
 sudo du -sh /var/log
+```
+
+Load averages (1, 5, 15 min):
+
+```bash
 uptime
+```
+
+Number of CPU cores:
+
+```bash
 nproc
 ```
 
-- `free -h`: look at **available**, not **free**. Linux uses spare memory as cache; `available` is what new programs can really get.
-- `df -h` shows space per file system. If the file system holding `/var/log` reaches 100 %, services cannot write logs and may fail.
-- `du -sh` shows how much one folder uses. Use it to find what is filling a disk.
-- `uptime` prints three **load averages** (last 1, 5 and 15 minutes). Compare them with `nproc` (number of CPU cores): a load near or above the core count means the machine is busy.
+- Load near or above the core count = machine is busy.
 
 ## 10. Services with systemd
 
-Each long-running server program is a **service** (a systemd unit). Practise on services that already exist on Ubuntu:
+- Each long-running server program is a **service** (systemd unit). Practise on `cron`.
+
+Full status:
 
 ```bash
 systemctl status cron --no-pager
+```
+
+Running now?
+
+```bash
 systemctl is-active cron
+```
+
+Starts at boot?
+
+```bash
 systemctl is-enabled cron
+```
+
+All running services:
+
+```bash
 systemctl list-units --type=service --state=running --no-pager
+```
+
+Failed units — check this first when something "stopped working":
+
+```bash
 systemctl list-units --failed --no-pager
 ```
 
-- `is-active`: running now? `is-enabled`: will it start at boot? They are separate questions.
-- `--failed` lists units that crashed or failed to start. Run it first when something "stopped working".
-
-Read a service's log with `journalctl`:
+Last 20 log lines of a service:
 
 ```bash
 sudo journalctl -u cron -n 20 --no-pager
+```
+
+Last hour only:
+
+```bash
 sudo journalctl -u cron --since '1 hour ago' --no-pager
+```
+
+Errors since last boot:
+
+```bash
 sudo journalctl -p err -b --no-pager | tail -n 20
 ```
 
-- `-u` selects the unit, `-n` the number of lines, `--since` a time window, `-p err` errors only, `-b` since the last boot.
-- `sudo journalctl -u cron -f` follows new lines live; stop it with Ctrl+C.
-- The service commands you will use later: `sudo systemctl start|stop|restart|reload <name>`. `reload` re-reads configuration without dropping connections, if the service supports it.
+- `-u` unit, `-n` lines, `--since` time window, `-p err` errors only, `-b` since boot.
+- `sudo journalctl -u cron -f` follows live; Ctrl+C stops.
+- Later: `sudo systemctl start|stop|restart|reload <name>`. `reload` re-reads config without dropping connections, if supported.
 
 ## 11. Ports and networking
 
+Interfaces and addresses (`lo` / `127.0.0.1` = this laptop):
+
 ```bash
 ip -br a
+```
+
+Routes (`default via` = gateway):
+
+```bash
 ip route
+```
+
+Listening TCP ports with process:
+
+```bash
 sudo ss -lntp
+```
+
+- `0.0.0.0:80` = all addresses; `127.0.0.1:8080` = local only.
+
+Local name table:
+
+```bash
 cat /etc/hosts
+```
+
+Resolve a name like most programs do (`/etc/hosts`, then DNS — no `dig` needed):
+
+```bash
 getent hosts localhost
+```
+
+Resolve an internet name:
+
+```bash
 getent ahosts ubuntu.com
 ```
 
-- `ip -br a` lists network interfaces and addresses briefly. `lo` with `127.0.0.1` is loopback: "this laptop".
-- `ip route` shows the default gateway (the `default via` line).
-- `ss -lntp`: **l**istening, **n**umeric, **t**CP, with **p**rocess. Each line is a port some program is waiting on. `0.0.0.0:80` means all addresses; `127.0.0.1:8080` means local only.
-- `getent hosts <name>` resolves a name the same way most programs do: `/etc/hosts` first, then DNS. You do not need `dig`.
-
-Check reachability and HTTP answers:
+Ping loopback:
 
 ```bash
 ping -c 3 127.0.0.1
+```
+
+Ping an internet host (some networks block ping; then use curl):
+
+```bash
 ping -c 3 ubuntu.com
+```
+
+- Ping proves the network path and name, not that a web server works.
+
+Response headers only (first line = status):
+
+```bash
 curl -I https://ubuntu.com/
+```
+
+Save the body and print status and time:
+
+```bash
 curl -s -o ~/lab/practice/ubuntu-home.html -w 'status=%{http_code} time=%{time_total}s\n' https://ubuntu.com/
+```
+
+Download with wget:
+
+```bash
 wget -O ~/lab/practice/ubuntu-home-wget.html https://ubuntu.com/
+```
+
+Check the downloads:
+
+```bash
 ls -lh ~/lab/practice/*.html
 ```
 
-- `ping` proves the network path and name resolution, not that a web server works. Some networks block ping; then try curl.
-- `curl -I` shows only response headers; the first line has the status code.
-- `curl -o <file>` saves the body; `-w` prints values such as the status code and total time.
-- `curl -v` prints every step: name lookup, TCP connect, request and response headers. Use it when a request fails and you do not know where.
+- `curl -v` prints every step (lookup, connect, headers) — use it when you do not know where a request fails.
 
-Run your own small web server on a test port and check it:
+- Run your own small web server on a test port.
+
+Go to the practice folder:
 
 ```bash
 cd ~/lab/practice
-python3 -m http.server 8099 --bind 127.0.0.1 &
-sleep 1
-sudo ss -lntp 'sport = :8099'
-curl -I http://127.0.0.1:8099/notes.txt
-curl -v http://127.0.0.1:8099/notes.txt
-nc -zv 127.0.0.1 8099
-nc -zv 127.0.0.1 8098
-kill %1
 ```
 
-- `nc -zv` tests only whether a TCP port accepts connections. `succeeded` means something listens; `Connection refused` means nothing listens on that port.
-- `kill %1` stops background job 1 of this terminal.
+Start a test server in the background:
+
+```bash
+python3 -m http.server 8099 --bind 127.0.0.1 &
+```
+
+Wait a second:
+
+```bash
+sleep 1
+```
+
+Who listens on 8099?
+
+```bash
+sudo ss -lntp 'sport = :8099'
+```
+
+Headers:
+
+```bash
+curl -I http://127.0.0.1:8099/notes.txt
+```
+
+Every step of the request:
+
+```bash
+curl -v http://127.0.0.1:8099/notes.txt
+```
+
+Test the TCP port only:
+
+```bash
+nc -zv 127.0.0.1 8099
+```
+
+Test a port where nothing listens:
+
+```bash
+nc -zv 127.0.0.1 8098
+```
+
+- **Expected:** `succeeded` for 8099; `Connection refused` for 8098.
+
+Stop the test server (matches the full command line):
+
+```bash
+pkill -f 'http.server 8099'
+```
 
 ## 12. Search and summarise logs
 
-Generate a sample access log in the same "combined" format Apache and Nginx use later:
+- Generate a sample access log in the "combined" format Apache and Nginx use later.
+
+Go to the logs folder:
 
 ```bash
 cd ~/lab/practice/logs
+```
+
+Generate 200 lines:
+
+```bash
 for i in $(seq 1 200); do
   ip="10.0.0.$(( i % 7 + 1 ))"
   status=200; path=/index.html
@@ -396,275 +873,578 @@ for i in $(seq 1 200); do
   printf '%s - - [11/Nov/2026:10:%02d:%02d +0530] "GET %s HTTP/1.1" %s %s "-" "curl/8.5.0"\n' \
     "$ip" $(( i / 60 )) $(( i % 60 )) "$path" "$status" $(( 100 + i ))
 done > access.log
+```
+
+Count lines:
+
+```bash
 wc -l access.log
+```
+
+First lines:
+
+```bash
 head -n 3 access.log
 ```
 
-Sample line:
+- Sample line:
 
 ```text
 10.0.0.2 - - [11/Nov/2026:10:00:01 +0530] "GET /index.html HTTP/1.1" 200 101 "-" "curl/8.5.0"
 ```
 
-Search with grep:
+Count 404s:
 
 ```bash
 grep -c '" 404 ' access.log
+```
+
+500s with line numbers:
+
+```bash
 grep -n '" 500 ' access.log
+```
+
+Ignore case:
+
+```bash
 grep -i 'ADMIN' access.log
+```
+
+Count lines that are **not** 200:
+
+```bash
 grep -v '" 200 ' access.log | wc -l
+```
+
+401 or 500 (extended pattern):
+
+```bash
 grep -E '" (401|500) ' access.log | tail -n 3
 ```
 
-- `-c` counts matching lines, `-n` adds line numbers, `-i` ignores upper/lower case, `-v` shows lines that do **not** match, `-E` allows `(a|b)` patterns.
-- Searching for `" 404 ` (quote, space, code, space) matches the status field, not a size or time that happens to contain `404`.
+- `" 404 ` (quote, space, code, space) matches the status field, not a size or time containing `404`.
+- awk fields here: `$1` client address, `$7` path, `$9` status.
 
-Count with awk, sort and uniq. awk splits each line on spaces; in this format field 1 is the client address, field 7 the path and field 9 the status:
+Count per status:
 
 ```bash
 awk '{print $9}' access.log | sort | uniq -c | sort -rn
+```
+
+Top three clients:
+
+```bash
 awk '{print $1}' access.log | sort | uniq -c | sort -rn | head -n 3
+```
+
+Server errors with time and path:
+
+```bash
 awk '$9 >= 500 {print $4, $7, $9}' access.log
+```
+
+Paths that gave 404:
+
+```bash
 awk '$9 == 404 {print $7}' access.log | sort | uniq -c
 ```
 
-Expected status counts: `170` × 200, `16` × 404, `8` × 500, `6` × 401.
+- **Expected status counts:** `170` × 200, `16` × 404, `8` × 500, `6` × 401.
+- `sort | uniq -c | sort -rn` is the most-used log pipeline: group, count, biggest first.
 
-- `sort | uniq -c | sort -rn` is the most-used log pipeline: group equal lines, count them, biggest first.
-
-Follow a log while it grows. In terminal A:
+Follow the log live (terminal A):
 
 ```bash
 tail -f ~/lab/practice/logs/access.log
 ```
 
-In terminal B:
+Append a line (terminal B):
 
 ```bash
 echo '10.0.0.9 - - [11/Nov/2026:10:05:00 +0530] "GET /live-test HTTP/1.1" 404 120 "-" "curl/8.5.0"' >> ~/lab/practice/logs/access.log
 ```
 
-The new line appears in terminal A at once. Stop `tail -f` with Ctrl+C.
+- **Expected:** the line appears in terminal A at once. Ctrl+C stops `tail -f`.
 
-Read a long file page by page:
+Page through a long file:
 
 ```bash
 less ~/lab/practice/logs/access.log
 ```
 
-- Space = next page, `b` = back, `/500` + Enter = search, `n` = next match, `G` = end, `q` = quit.
+- Space next page, `b` back, `/500` + Enter search, `n` next match, `G` end, `q` quit.
 
 ## 13. Archives and checksums
 
-Back up the practice folder, list the archive, and restore it to a different place:
+Go to `~/lab`:
 
 ```bash
 cd ~/lab
+```
+
+Create a dated backup archive:
+
+```bash
 tar czf ~/lab/backups/practice-$(date +%F).tar.gz -C ~/lab practice
+```
+
+Check it:
+
+```bash
 ls -lh ~/lab/backups/
+```
+
+List its contents — always before extracting:
+
+```bash
 tar tzf ~/lab/backups/practice-$(date +%F).tar.gz | head
+```
+
+Create a restore folder:
+
+```bash
 mkdir -p ~/lab/restore
+```
+
+Extract there:
+
+```bash
 tar xzf ~/lab/backups/practice-$(date +%F).tar.gz -C ~/lab/restore
+```
+
+Compare with the original:
+
+```bash
 diff -r ~/lab/practice ~/lab/restore/practice && echo "restore matches"
 ```
 
-- `c` create, `t` list, `x` extract, `z` gzip, `f` the archive file name. `-C` changes folder first, so the archive stores the path `practice/...` instead of your full home path.
-- Always **list** (`tzf`) an archive before extracting it, so you know where its files will land.
+- `c` create, `t` list, `x` extract, `z` gzip, `f` archive name. `-C` changes folder first, so the archive stores `practice/...`, not your full home path.
 
-Zip files. A Java WAR file is a zip file:
+- Zip files — a Java WAR is a zip file.
+
+Install zip:
 
 ```bash
 sudo apt install -y zip
+```
+
+Go to `~/lab`:
+
+```bash
 cd ~/lab
+```
+
+Zip the practice folder:
+
+```bash
 zip -r ~/lab/backups/practice.zip practice
+```
+
+List the zip:
+
+```bash
 unzip -l ~/lab/backups/practice.zip | tail -n 5
+```
+
+List the payment WAR:
+
+```bash
 unzip -l ~/ltm/middleware-labs/project-files/apps/payment.war
 ```
 
-Checksums prove a file was not changed or damaged:
+- Checksums prove a file was not changed or damaged.
+
+Go to the backups:
 
 ```bash
 cd ~/lab/backups
-sha256sum practice-*.tar.gz practice.zip > SHA256SUMS
-cat SHA256SUMS
-sha256sum -c SHA256SUMS
-echo "tamper" >> practice.zip
-sha256sum -c SHA256SUMS
-zip -r ~/lab/backups/practice.zip ~/lab/practice > /dev/null
 ```
 
-- The first check prints `OK` for every file. After the `echo`, the zip reports `FAILED` — any change, even one byte, changes the checksum. The project repository uses the same check (`sha256sum -c SHA256SUMS`) in student start.
-- The last line rebuilds the zip; its checksum is now different, so make a new `SHA256SUMS` if you keep it.
+Record checksums:
+
+```bash
+sha256sum practice-*.tar.gz practice.zip > SHA256SUMS
+```
+
+Show them:
+
+```bash
+cat SHA256SUMS
+```
+
+Verify:
+
+```bash
+sha256sum -c SHA256SUMS
+```
+
+Damage the zip:
+
+```bash
+echo "tamper" >> practice.zip
+```
+
+Verify again:
+
+```bash
+sha256sum -c SHA256SUMS
+```
+
+- **Expected:** first check `OK` for every file; after the `echo`, the zip reports `FAILED` — one changed byte changes the checksum. Student start uses the same check.
+
+- Rebuild the damaged zip and record new checksums.
+
+Remove it:
+
+```bash
+rm ~/lab/backups/practice.zip
+```
+
+Go to `~/lab`:
+
+```bash
+cd ~/lab
+```
+
+Zip again quietly:
+
+```bash
+zip -r -q ~/lab/backups/practice.zip practice
+```
+
+Go to the backups:
+
+```bash
+cd ~/lab/backups
+```
+
+Record new checksums:
+
+```bash
+sha256sum practice-*.tar.gz practice.zip > SHA256SUMS
+```
+
+Verify:
+
+```bash
+sha256sum -c SHA256SUMS
+```
 
 ## 14. Break it, find it
 
-Each scenario creates a small, deliberate fault under `~/lab`, shows you how to find it with the tools above, and then removes it. Do them in order.
+- Each scenario creates a small fault under `~/lab`, finds it, and removes it. Do them in order.
 
 ### Scenario A — "No space left on device"
 
-Create a small 20 MB test disk inside `~/lab`, then overfill it:
+**Break** — a 20 MB test disk, overfilled:
 
 ```bash
 mkdir -p ~/lab/smalldisk
-sudo mount -t tmpfs -o size=20M tmpfs ~/lab/smalldisk
-sudo chown "$USER:$USER" ~/lab/smalldisk
-df -h ~/lab/smalldisk
-fallocate -l 15M ~/lab/smalldisk/old-app.log
-fallocate -l 10M ~/lab/smalldisk/new-app.log
-echo "one more log line" >> ~/lab/smalldisk/new-app.log
 ```
 
-Sample line:
+```bash
+sudo mount -t tmpfs -o size=20M tmpfs ~/lab/smalldisk
+```
+
+```bash
+sudo chown "$USER:$USER" ~/lab/smalldisk
+```
+
+```bash
+df -h ~/lab/smalldisk
+```
+
+```bash
+fallocate -l 15M ~/lab/smalldisk/old-app.log
+```
+
+```bash
+fallocate -l 10M ~/lab/smalldisk/new-app.log
+```
+
+**Expected** — sample line:
 
 ```text
 fallocate: fallocate failed: No space left on device
 ```
 
-Find what is using the space:
+**Observe** — which file system is full:
 
 ```bash
 df -h ~/lab/smalldisk
+```
+
+Which files fill it:
+
+```bash
 du -sh ~/lab/smalldisk/* | sort -h
 ```
 
-- `df` tells you **which file system** is full; `du` tells you **which files** fill it. On a real server you would run `sudo du -sh /var/log/* | sort -h`.
-- Fix: remove or archive the oldest log, never a file a running service is still writing to without checking first.
+- On a real server: `sudo du -sh /var/log/* | sort -h`.
+- Fix: remove or archive the oldest log — never a file a running service still writes to without checking.
 
-Recover:
+**Recover** — remove the old log:
 
 ```bash
 rm ~/lab/smalldisk/old-app.log
+```
+
+**Verify:**
+
+```bash
 df -h ~/lab/smalldisk
+```
+
+Remove the test disk:
+
+```bash
 sudo umount ~/lab/smalldisk
+```
+
+```bash
 rmdir ~/lab/smalldisk
 ```
 
 ### Scenario B — a runaway process
 
+**Break** — `yes` uses a whole CPU core:
+
 ```bash
 yes > /dev/null &
+```
+
+**Observe:**
+
+```bash
 top -b -n 1 | head -n 12
+```
+
+```bash
 ps -eo pid,user,%cpu,cmd --sort=-%cpu | head -n 5
 ```
 
-- `yes` uses a whole CPU core. It appears at the top of both lists with close to 100 % CPU.
-- `uptime` load rises over the next minute.
+- **Expected:** `yes` at the top of both lists near 100 % CPU; `uptime` load rises over the next minute.
 
-Stop it and verify:
+**Recover:**
 
 ```bash
 kill -TERM "$(pgrep -x yes)"
+```
+
+**Verify:**
+
+```bash
 pgrep -a yes || echo "no yes process left"
 ```
 
 ### Scenario C — port already in use
 
+**Break** — go to the practice folder:
+
 ```bash
 cd ~/lab/practice
+```
+
+Start the first server:
+
+```bash
 python3 -m http.server 8099 --bind 127.0.0.1 &
+```
+
+```bash
 sleep 1
+```
+
+Start a second one on the same port:
+
+```bash
 python3 -m http.server 8099 --bind 127.0.0.1
 ```
 
-Sample line:
+**Expected** — sample line:
 
 ```text
 OSError: [Errno 98] Address already in use
 ```
 
-- The second server cannot start because the first already listens on 8099. The same thing happens when Apache and Nginx both want port 80.
-- Find the owner of the port:
+- Same thing happens when Apache and Nginx both want port 80.
+
+**Observe** — who owns the port:
 
 ```bash
 sudo ss -lntp 'sport = :8099'
 ```
 
-Sample line:
+- Sample line:
 
 ```text
 LISTEN 0      5          127.0.0.1:8099      0.0.0.0:*    users:(("python3",pid=4321,fd=3))
 ```
 
-Recover by stopping the process that holds the port:
+**Recover:**
 
 ```bash
-kill %1
+pkill -f 'http.server 8099'
+```
+
+**Verify:**
+
+```bash
 sudo ss -lntp 'sport = :8099'
 ```
 
-Expected: the second `ss` prints only the header line.
+- **Expected:** only the header line.
 
 ### Scenario D — permission denied
 
+**Break** — a file with no permissions:
+
 ```bash
 cd ~/lab/practice/conf
+```
+
+```bash
 chmod 000 app.conf
-cat app.conf
+```
+
+**Observe:**
+
+```bash
 ls -l app.conf
-chmod 755 ~/lab/practice/conf
+```
+
+```bash
+cat app.conf
+```
+
+**Expected** — sample line:
+
+```text
+cat: app.conf: Permission denied
+```
+
+- `----------`: only root may read it, not even you as owner.
+
+**Recover:**
+
+```bash
 chmod 644 app.conf
+```
+
+**Verify:**
+
+```bash
+cat app.conf
+```
+
+**Break** — a folder that cannot be passed through:
+
+```bash
 chmod 600 ~/lab/practice/conf
-ls ~/lab/practice/conf
-sudo -u www-data ls /home
+```
+
+**Observe:**
+
+```bash
+cat ~/lab/practice/conf/app.conf
+```
+
+```bash
 namei -l ~/lab/practice/conf/app.conf
 ```
 
-- `chmod 000` removes every permission, so even you get `cat: app.conf: Permission denied`.
-- `namei -l` shows which folder on the path is missing the `x` bit. Here `conf` is `drw-------`: you can see the names inside but cannot open the files.
+- Sample output:
 
-Recover:
+```text
+f: /home/student/lab/practice/conf/app.conf
+drwxr-xr-x root    root    /
+drwxr-xr-x root    root    home
+drwxr-x--- student student student
+drwxrwxr-x student student lab
+drwxrwxr-x student student practice
+drw------- student student conf
+                            app.conf - Permission denied
+```
+
+- The file is still `644`, but `conf` lost its `x` bit; `namei -l` points at the exact folder. Same check as for an Apache 403 in Lab 1.
+
+**Recover:**
 
 ```bash
 chmod 755 ~/lab/practice/conf
-chmod 644 ~/lab/practice/conf/app.conf
+```
+
+**Verify:**
+
+```bash
 cat ~/lab/practice/conf/app.conf
 ```
 
 ### Scenario E — "Could not resolve host"
 
+**Observe:**
+
 ```bash
 curl -I http://lab0.example.test/
+```
+
+```bash
 getent hosts lab0.example.test || echo "name not found"
 ```
 
-Sample line:
+**Expected** — sample line:
 
 ```text
 curl: (6) Could not resolve host: lab0.example.test
 ```
 
-- The program never reached any server: the **name** could not be turned into an address. This is different from `Connection refused` (address found, nothing listening) and from an HTTP error code (a server answered).
-- In Lab 1 you fix this kind of problem for `portal.example.test` by adding one line to `/etc/hosts`.
+- No server was reached: the **name** has no address. Different from `Connection refused` (address found, nothing listening) and from an HTTP error code (a server answered).
+- In Lab 1 you fix this for `portal.example.test` with one line in `/etc/hosts`.
 
 ## 15. Self-check
 
 Answer from memory, then check with a command.
 
-1. Which command shows the permissions of a folder itself rather than its contents?
-2. A file is `-rw-r-----  root www-data`. Can `www-data` read it? Can it write it? Can your own account read it?
-3. What is the difference between `kill -TERM` and `kill -KILL`?
-4. `free -h` shows `free 200Mi` and `available 2.1Gi`. Is the laptop out of memory?
+1. Which command shows the permissions of a folder itself, not its contents?
+2. A file is `-rw-r-----  root www-data`. Can `www-data` read it? Write it? Can your own account read it?
+3. `kill -TERM` vs `kill -KILL`?
+4. `free -h` shows `free 200Mi`, `available 2.1Gi`. Out of memory?
 5. Which command shows the program listening on port 8099?
-6. Write a pipeline that prints the top three client addresses in `access.log`.
+6. Write a pipeline printing the top three client addresses in `access.log`.
 7. How do you prove a backup archive was not changed since you made it?
-8. `curl` says `Connection refused` on port 8080. Is it a name problem, a network problem or "nothing listening"?
+8. `curl` says `Connection refused` on port 8080: name problem, network problem or "nothing listening"?
 
 Answers:
 
 1. `ls -ld <folder>`.
-2. Yes (group `r`); no (no group `w`); no — you are "others", with no permissions (unless you use `sudo`).
-3. `TERM` asks the process to finish cleanly; `KILL` ends it immediately without clean-up. Try `TERM` first.
-4. No. `available` is what programs can use; much of the rest is cache Linux gives back when needed.
+2. Yes (group `r`); no (no group `w`); no — you are "others" with no permissions (unless `sudo`).
+3. `TERM` asks for a clean finish; `KILL` ends at once without clean-up. Try `TERM` first.
+4. No. `available` is what programs can use; much of the rest is cache given back when needed.
 5. `sudo ss -lntp 'sport = :8099'`.
 6. `awk '{print $1}' access.log | sort | uniq -c | sort -rn | head -n 3`.
-7. Record `sha256sum` when you make it, later run `sha256sum -c`.
-8. Nothing listening on that address and port: the name resolved and the laptop answered, but no program accepted the connection.
+7. Record `sha256sum` when you make it; later run `sha256sum -c`.
+8. Nothing listening: the name resolved and the laptop answered, but no program accepted the connection.
 
 ## 16. Clean up
 
+No test web server left:
+
 ```bash
-pgrep -a 'yes|http.server' || echo "no practice processes left"
+pgrep -af 'http.server 8099' || echo "no test web server left"
+```
+
+No `yes` process left:
+
+```bash
+pgrep -ax yes || echo "no yes process left"
+```
+
+Check your lab folder:
+
+```bash
 ls ~/lab
 ```
 
-Keep `~/lab/practice`; Lab 6 reuses the same log commands. Continue to [Lab 1 — Apache](01-apache.md).
+- Keep `~/lab/practice` — Lab 6 reuses the same log commands.
+- Next: [Lab 1 — Apache](01-apache.md).

@@ -2,7 +2,8 @@
 
 Name: __________ Laptop: __________ Date/time zone: __________
 
-For each lab, copy commands and short relevant output into your own notes under `~/lab/evidence`. Record observations instead of only screenshots of green service states.
+- For each lab, copy commands and short relevant output into notes under `~/lab/evidence`.
+- Record observations, not only screenshots of green service states.
 
 | Lab | Evidence to collect | Explain to a partner |
 | --- | --- | --- |
@@ -12,7 +13,9 @@ For each lab, copy commands and short relevant output into your own notes under 
 | Reverse proxy | Matching frontend/backend request, 502/503/504 evidence | Which hop failed and why |
 | Gateway | Route, consumer, 401/403/429 headers/logs, backend 500/502 | Authentication vs authorization vs quota |
 
-Use this incident record for every deliberate fault:
+## Incident record
+
+- Fill this in for every deliberate fault:
 
 ```text
 Timestamp and time zone:
@@ -30,17 +33,54 @@ Successful verification after recovery:
 
 ## Final incident — diagnose a hidden fault
 
-Start with Lab 4 proxy configuration and gateway stage 3 (keys + ACL, no rate limiter). Ask a partner to choose one fault without telling you which one:
+- Start from Lab 4 proxy config and gateway stage 3 (keys + ACL, no rate limiter). This also restores the proxy routes if you did the optional Lab 5 lockdown.
 
-1. Stop Tomcat.
-2. Change only Apache's upstream port to 8090.
-3. Change only Nginx's document root to a nonexistent directory.
-4. Give your partner the blocked consumer key to test Kong.
-5. Give your partner `/payment/fail` to test through a proxy.
+Restore the Apache proxy site:
 
-Your procedure: reproduce the exact symptom, compare a working endpoint, test the backend directly if appropriate, inspect the correct logs, identify the owner and recover. Do not restart every service.
+```bash
+sudo cp ~/ltm/middleware-labs/project-files/config/apache-proxy.conf /etc/apache2/sites-available/payment-portal.conf
+```
 
-Success criteria: diagnosis cites at least two pieces of evidence; recovery fixes only the relevant layer; Apache static health, Nginx static health, direct Tomcat status, both proxy status endpoints and the authorized gateway status all work afterward. Return Kong to stage 4 after the exercise.
+Restore the Nginx proxy site:
+
+```bash
+sudo cp ~/ltm/middleware-labs/project-files/config/nginx-proxy.conf /etc/nginx/sites-available/payment-portal
+```
+
+Test and reload Apache:
+
+```bash
+sudo apache2ctl configtest && sudo systemctl reload apache2
+```
+
+Test and reload Nginx:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Install Kong stage 3:
+
+```bash
+sudo cp ~/ltm/middleware-labs/project-files/kong/03-acl.yml /etc/kong-lab/kong.yml
+```
+
+Check and reload Kong:
+
+```bash
+sudo -u kong-lab kong config parse /etc/kong-lab/kong.yml -c /etc/kong-lab/kong.conf && sudo systemctl reload payment-kong
+```
+
+- Your partner picks one fault without telling you:
+  1. Stop Tomcat.
+  2. Change only Apache's upstream port to 8090.
+  3. Change only Nginx's document root to a nonexistent directory.
+  4. Give you the blocked consumer key to test Kong.
+  5. Give you `/payment/fail` to test through a proxy.
+- **Procedure:** reproduce the exact symptom → compare a working endpoint → test the backend directly if appropriate → read the correct logs → name the owner → recover. Do not restart every service.
+- **Success:** diagnosis cites at least two pieces of evidence; recovery touches only the faulty layer.
+- **Verify afterwards:** Apache static health, Nginx static health, direct Tomcat status, both proxy status endpoints and the authorized gateway status all work.
+- Return Kong to stage 4 after the exercise.
 
 ## Short knowledge check
 

@@ -1,0 +1,70 @@
+_format_version: "3.0"
+_transform: true
+services:
+  - name: payment
+    url: http://127.0.0.1:8080/payment
+    connect_timeout: 3000
+    read_timeout: 10000
+    retries: 0
+    routes:
+      - name: payment-route
+        paths: [ /api/payment ]
+        strip_path: true
+        path_handling: v0
+
+  # Day 2 Lab 3: the same backend, published on a new path protected by JWT
+  - name: payment-v2
+    url: http://127.0.0.1:8080/payment
+    connect_timeout: 3000
+    read_timeout: 10000
+    retries: 0
+    routes:
+      - name: payment-v2-route
+        paths: [ /api/v2/payment ]
+        strip_path: true
+        path_handling: v0
+
+consumers:
+  - username: mobile-app
+    keyauth_credentials:
+      - key: demo-key-123
+    acls:
+      - group: payment-users
+    # tokens whose "iss" claim is this value belong to mobile-app;
+    # Kong checks their RS256 signature with the issuer PUBLIC key below
+    jwt_secrets:
+      - key: https://auth.example.com
+        algorithm: RS256
+        rsa_public_key: |
+          __ISSUER_PUBLIC_KEY__
+  - username: blocked-partner
+    keyauth_credentials:
+      - key: blocked-key-456
+plugins:
+  - name: key-auth
+    service: payment
+    config:
+      key_names: [ apikey ]
+      hide_credentials: true
+      key_in_query: false
+      key_in_body: false
+
+  - name: acl
+    service: payment
+    config:
+      allow: [ payment-users ]
+      hide_groups_header: true
+
+  - name: rate-limiting
+    service: payment
+    config:
+      minute: 5
+      policy: local
+      limit_by: consumer
+
+  # Day 2 Lab 3: JWT check on the new service only
+  - name: jwt
+    service: payment-v2
+    config:
+      key_claim_name: iss
+      claims_to_verify: [ exp ]

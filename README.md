@@ -2,7 +2,7 @@
 
 Hands-on Ubuntu laptop labs using one incremental Payment Operations project. All application files are prepared; you focus on installing, configuring, deploying and troubleshooting middleware.
 
-Start with [the lab index](middleware-labs/README.md) and [Ubuntu laptop setup](middleware-labs/00-student-start.md). The five guides cover Apache, Nginx, Tomcat, reverse proxies and Kong API gateway.
+Start with [the lab index](middleware-labs/README.md) and [Ubuntu laptop setup](middleware-labs/00-student-start.md). The guides cover Linux skills, Apache, Nginx, Tomcat, reverse proxies, the Kong API gateway, reading logs and troubleshooting drills.
 
 Clone on each Ubuntu laptop:
 

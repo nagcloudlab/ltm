@@ -1,0 +1,8 @@
+[Sun Nov 15 12:27:23.117320 2026] [authz_core:error] [pid 5597:tid 281473012330784] [client 127.0.0.1:55186] AH01630: client denied by server configuration: /var/www/payment-portal/private/
+[Sun Nov 15 12:27:23.126090 2026] [auth_basic:error] [pid 5596:tid 281472978514208] [client 127.0.0.1:55200] AH01617: user admin: authentication failure for "/admin/": Password Mismatch
+[Sun Nov 15 12:27:39.230965 2026] [proxy_http:error] [pid 5596:tid 281472728297760] (70007)The timeout specified has expired: [client 127.0.0.1:55264] AH01102: error reading status line from remote server 127.0.0.1:8080
+[Sun Nov 15 12:27:39.231635 2026] [proxy:error] [pid 5596:tid 281472728297760] [client 127.0.0.1:55264] AH00898: Error reading from remote server returned by /payment/slow
+[Sun Nov 15 12:27:41.358962 2026] [proxy:error] [pid 5596:tid 281472711389472] (111)Connection refused: AH00957: http: attempt to connect to 127.0.0.1:8080 (127.0.0.1:8080) failed
+[Sun Nov 15 12:27:41.359029 2026] [proxy_http:error] [pid 5596:tid 281472711389472] [client 127.0.0.1:50738] AH01114: HTTP: failed to make connection to backend: 127.0.0.1
+[Sun Nov 15 12:27:43.392985 2026] [proxy:error] [pid 5597:tid 281472526971168] (111)Connection refused: AH00957: http: attempt to connect to 127.0.0.1:8080 (127.0.0.1:8080) failed
+[Sun Nov 15 12:27:43.393139 2026] [proxy_http:error] [pid 5597:tid 281472526971168] [client 127.0.0.1:50758] AH01114: HTTP: failed to make connection to backend: 127.0.0.1
