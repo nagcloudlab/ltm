@@ -1,0 +1,7 @@
+# Generated keys, certificates and keystores: create them yourself, never commit them
+*.key
+*.crt
+*.csr
+*.srl
+*.p12
+*.pem

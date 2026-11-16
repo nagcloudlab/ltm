@@ -1,0 +1,6 @@
+# Extensions for client certificates (signed by the intermediate CA)
+basicConstraints = critical, CA:FALSE
+keyUsage = critical, digitalSignature
+extendedKeyUsage = clientAuth
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid

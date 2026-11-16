@@ -1,0 +1,7 @@
+# Extensions for the server certificate (signed by the intermediate CA)
+basicConstraints = critical, CA:FALSE
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = DNS:localhost
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid

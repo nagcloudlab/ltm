@@ -1,0 +1,5 @@
+# Extensions for the intermediate CA certificate (signed by the root CA)
+basicConstraints = critical, CA:TRUE, pathlen:0
+keyUsage = critical, keyCertSign, cRLSign
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid

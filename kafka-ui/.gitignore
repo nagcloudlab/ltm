@@ -1,0 +1,2 @@
+# The Kafka UI jar is ~95 MB: download it with the README command, do not commit it
+lib/*.jar
